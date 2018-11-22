@@ -11,7 +11,7 @@ const isStar = true;
  * @returns {Object}
  */
 function getEmitter() {
-    let events = {};
+    const events = {};
 
     return {
 
@@ -23,7 +23,7 @@ function getEmitter() {
          * @returns {Object}
          */
         on: function (event, context, handler) {
-            console.info(event, context, handler);
+            // console.info(event, context, handler);
             if (!events[event]) {
                 events[event] = [];
             }
@@ -39,12 +39,15 @@ function getEmitter() {
          * @returns {Object}
          */
         off: function (event, context) {
-            for (let key in events) {
-                if (key === event || key.startsWith(event + '.')) {
-                    // console.log(events[key])
-                    events[key] = events[key].filter(e => e.context !== context);
+            // console.info(event, context);
+            Object
+                .keys(events)
+                .forEach(key => {
+                    if (key === event || key.startsWith(event + '.')) {
+                        events[key] = events[key].filter(e => e.context !== context);
+                    }
                 }
-            }
+                );
 
             return this;
         },
@@ -56,17 +59,13 @@ function getEmitter() {
          */
         emit: function (event) {
             console.info(event);
-            let submitEvents = [];
-            let eventParse = event.split('.');
-            while (eventParse.length > 0) {
-                let eventName = eventParse.join('.');
-                if (events[eventName]) {
-                    submitEvents.push(eventName);
-                }
-                eventParse.pop();
-            }
-            submitEvents.forEach(eventName => events[eventName]
-                .forEach(e => e.handler.call(e.context)));
+            Object
+                .keys(events)
+                .filter(e => e === event || event.startsWith(`${e}.`))
+                .sort((a, b) => a.localeCompare(b))
+                .reverse()
+                .forEach(eventName => events[eventName]
+                    .forEach(e => e.handler.call(e.context)));
 
             return this;
         },
@@ -81,7 +80,7 @@ function getEmitter() {
          * @returns {Object}
          */
         several: function (event, context, handler, times) {
-            console.info(event, context, handler, times);
+            // console.info(event, context, handler, times);
             this.on(event, context, () => {
                 if (times > 0) {
                     handler.call(context);
